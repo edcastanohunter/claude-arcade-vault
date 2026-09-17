@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Press_Start_2P, JetBrains_Mono } from "next/font/google";
+import Link from "next/link";
 import Nav from "@/components/Nav";
 import "./globals.css";
 
@@ -43,6 +44,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             }}
           >
             © 2026 ARCADE VAULT · HECHO CON PIXELES Y NEÓN · v2.6.0
+            <br />
+            <Link href="/about" style={{ color: "inherit" }}>
+              Acerca de
+            </Link>
           </footer>
         </div>
       </body>
