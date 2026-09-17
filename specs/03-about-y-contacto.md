@@ -1,6 +1,6 @@
 # 03 — About y formulario de contacto con envío de correo
 
-**Estado:** Aprobado
+**Estado:** Implemented
 **Depende de:** SPEC 01, SPEC 02
 **Fecha:** 2026-09-17
 
