@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/format-on-write.js",
+            "timeout": 60,
+            "statusMessage": "Formatting with Prettier + ESLint..."
+          }
+        ]
+      }
+    ]
+  }
+}
