@@ -44,3 +44,6 @@ mkdir .playwright-screenshots
 - `npm run lint` — ESLint (flat config via `eslint-config-next`)
 
 There is no test runner configured yet.
+
+
+https://code.claude.com/docs/en/hooks
