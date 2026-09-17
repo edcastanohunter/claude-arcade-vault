@@ -1,6 +1,6 @@
 # 02 — Home: pantalla de aterrizaje (landing)
 
-**Estado:** Aprivado
+**Estado:** Implementado
 **Depende de:** SPEC 01
 **Fecha:** 2026-09-17
 
