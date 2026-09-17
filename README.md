@@ -21,6 +21,21 @@ npx skills add https://github.com/nextlevelbuilder/ui-ux-pro-max-skill --skill u
 ```
 - repo: https://www.skills.sh/
 
+
+## MCP
+- https://playwright.dev/docs/getting-started-mcp
+  - Use Playwright MCP to verify app home to look same as it is in the @refereces/templates
+
+```bash
+# create the folder to store screenshots
+mkdir .playwright-screenshots
+
+# instruch claude to use that folder, add the # at the beginging
+# record all playwright screenshots in .playwright-screenshots folder
+
+
+```
+
 ## Commands
 
 - `npm run dev` — start the dev server (Turbopack)
