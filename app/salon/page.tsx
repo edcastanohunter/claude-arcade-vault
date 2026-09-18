@@ -1,16 +1,49 @@
+import { redirect } from "next/navigation";
 import { getGames } from "@/lib/games";
 import { getCurrentUser } from "@/lib/auth";
-import { getAllGameLeaderboards, getGlobalLeaderboard, getProfileBests } from "@/lib/scores";
+import { getBoardPreviews, getLeaderboard, getProfileBest } from "@/lib/scores";
+import { GLOBAL_VIEW, parseSalonParams, salonHref } from "@/lib/salon";
 import HallOfFame from "@/components/HallOfFame";
 
-export default async function SalonPage() {
-  const [games, byGame, global, user] = await Promise.all([
+export default async function SalonPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const [games, raw, user] = await Promise.all([
     getGames(),
-    getAllGameLeaderboards(12),
-    getGlobalLeaderboard(12),
+    searchParams,
     getCurrentUser(),
   ]);
-  const me = user?.profileId ? { name: user.name, bests: await getProfileBests(user.profileId) } : null;
+  const params = parseSalonParams(
+    raw,
+    games.map((g) => g.id),
+  );
 
-  return <HallOfFame games={games} boards={{ ...byGame, global }} me={me} />;
+  if (params.juego === null) {
+    const previews = await getBoardPreviews(games, params.periodo);
+    return <HallOfFame games={games} params={params} previews={previews} />;
+  }
+
+  const wantsMine = params.juego !== GLOBAL_VIEW && user?.profileId;
+  const [detail, mine] = await Promise.all([
+    getLeaderboard(params),
+    wantsMine
+      ? getProfileBest(params.juego, params.periodo, user.profileId!)
+      : null,
+  ]);
+  // Página fuera de rango: vuelve a la primera conservando periodo y búsqueda.
+  if (detail.rows.length === 0 && params.pagina > 1) {
+    redirect(salonHref({ ...params, pagina: 1 }));
+  }
+
+  return (
+    <HallOfFame
+      games={games}
+      params={params}
+      detail={detail}
+      mine={mine}
+      meName={user?.name}
+    />
+  );
 }

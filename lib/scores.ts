@@ -1,5 +1,15 @@
 import { createClient } from "@/lib/supabase/server";
-import type { ScoreRow } from "@/lib/data";
+import type { Game, ScoreRow } from "@/lib/data";
+import type { Database } from "@/lib/supabase/database.types";
+import {
+  DETAIL_PAGE_SIZE,
+  GLOBAL_VIEW,
+  PREVIEW_SIZE,
+  periodSince,
+  type LeaderboardPage,
+  type Period,
+  type SalonParams,
+} from "@/lib/salon";
 
 function fmtDate(iso: string | null): string {
   if (!iso) return "—";
@@ -9,7 +19,10 @@ function fmtDate(iso: string | null): string {
 }
 
 // Ranking de un juego (mejor marca por perfil) desde v_game_leaderboard.
-export async function getGameLeaderboard(gameId: string, limit = 10): Promise<ScoreRow[]> {
+export async function getGameLeaderboard(
+  gameId: string,
+  limit = 10,
+): Promise<ScoreRow[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("v_game_leaderboard")
@@ -21,25 +34,14 @@ export async function getGameLeaderboard(gameId: string, limit = 10): Promise<Sc
   return data.map(toRow);
 }
 
-// Rankings de todos los juegos, agrupados por game_id (pestañas del Salón de la Fama).
-export async function getAllGameLeaderboards(perGame = 12): Promise<Record<string, ScoreRow[]>> {
-  const supabase = await createClient();
-  const { data, error } = await supabase.from("v_game_leaderboard").select("*").order("rank");
-  if (error) throw new Error(error.message);
-
-  const byGame: Record<string, ScoreRow[]> = {};
-  for (const r of data) {
-    if (!r.game_id) continue;
-    (byGame[r.game_id] ??= []).push(toRow(r));
-  }
-  // Se conservan las filas del top y, aparte, la del usuario se busca en el cliente por profileId.
-  return Object.fromEntries(Object.entries(byGame).map(([g, rows]) => [g, rows.slice(0, perGame)]));
-}
-
 // Suma de mejores marcas por perfil desde v_global_leaderboard.
 export async function getGlobalLeaderboard(limit = 12): Promise<ScoreRow[]> {
   const supabase = await createClient();
-  const { data, error } = await supabase.from("v_global_leaderboard").select("*").order("rank").limit(limit);
+  const { data, error } = await supabase
+    .from("v_global_leaderboard")
+    .select("*")
+    .order("rank")
+    .limit(limit);
   if (error) throw new Error(error.message);
   return data.map((r) => ({
     rank: r.rank ?? 0,
@@ -50,12 +52,89 @@ export async function getGlobalLeaderboard(limit = 12): Promise<ScoreRow[]> {
   }));
 }
 
-// Mejor marca de un perfil en cada juego (para la fila "tu mejor marca").
-export async function getProfileBests(profileId: string): Promise<Record<string, ScoreRow>> {
+// ===== SPEC 06: ranking parametrizado vía RPC `leaderboard` =====
+
+type LeaderboardRpcRow =
+  Database["public"]["Functions"]["leaderboard"]["Returns"][number];
+
+function toRpcRow(r: LeaderboardRpcRow): ScoreRow {
+  return {
+    rank: r.rank,
+    name: r.display_name,
+    score: r.score,
+    date: fmtDate(r.achieved_at), // null en el ranking global -> "—"
+    profileId: r.profile_id,
+  };
+}
+
+async function callLeaderboard(
+  args: Database["public"]["Functions"]["leaderboard"]["Args"],
+) {
   const supabase = await createClient();
-  const { data, error } = await supabase.from("v_game_leaderboard").select("*").eq("profile_id", profileId);
+  const { data, error } = await supabase.rpc("leaderboard", args);
   if (error) throw new Error(error.message);
-  return Object.fromEntries(data.filter((r) => r.game_id).map((r) => [r.game_id!, toRow(r)]));
+  return data;
+}
+
+// Tabla de una vista de detalle (GLOBAL o un juego): página `params.pagina` de 10 filas.
+export async function getLeaderboard(
+  params: SalonParams,
+): Promise<LeaderboardPage> {
+  const data = await callLeaderboard({
+    p_game_id:
+      params.juego && params.juego !== GLOBAL_VIEW ? params.juego : undefined,
+    p_since: periodSince(params.periodo) ?? undefined,
+    p_search: params.q || undefined,
+    p_limit: DETAIL_PAGE_SIZE,
+    p_offset: (params.pagina - 1) * DETAIL_PAGE_SIZE,
+  });
+  return {
+    rows: data.map(toRpcRow),
+    total: Number(data[0]?.total_count ?? 0),
+    page: params.pagina,
+    pageSize: DETAIL_PAGE_SIZE,
+  };
+}
+
+// Top 5 de cada juego para la rejilla (una llamada por juego, en paralelo).
+export async function getBoardPreviews(
+  games: Game[],
+  periodo: Period,
+): Promise<Record<string, LeaderboardPage>> {
+  const since = periodSince(periodo) ?? undefined;
+  const pages = await Promise.all(
+    games.map(async (g) => {
+      const data = await callLeaderboard({
+        p_game_id: g.id,
+        p_since: since,
+        p_limit: PREVIEW_SIZE,
+        p_offset: 0,
+      });
+      const page: LeaderboardPage = {
+        rows: data.map(toRpcRow),
+        total: Number(data[0]?.total_count ?? 0),
+        page: 1,
+        pageSize: PREVIEW_SIZE,
+      };
+      return [g.id, page] as const;
+    }),
+  );
+  return Object.fromEntries(pages);
+}
+
+// Fila «TU MEJOR MARCA»: mejor marca del perfil en un juego dentro del periodo, con su rango real.
+export async function getProfileBest(
+  gameId: string,
+  periodo: Period,
+  profileId: string,
+): Promise<ScoreRow | null> {
+  const data = await callLeaderboard({
+    p_game_id: gameId,
+    p_since: periodSince(periodo) ?? undefined,
+    p_profile_id: profileId,
+    p_limit: 1,
+  });
+  return data[0] ? toRpcRow(data[0]) : null;
 }
 
 // Últimas partidas registradas (ticker de la home).
@@ -67,7 +146,11 @@ export async function getRecentScores(limit = 7) {
     .order("created_at", { ascending: false })
     .limit(limit);
   if (error) throw new Error(error.message);
-  return data.map((r) => ({ gameId: r.game_id, score: r.score, name: r.profiles?.display_name ?? "" }));
+  return data.map((r) => ({
+    gameId: r.game_id,
+    score: r.score,
+    name: r.profiles?.display_name ?? "",
+  }));
 }
 
 function toRow(r: {

@@ -893,7 +893,58 @@ a { color: inherit; text-decoration: none; }
 }
 .hall-head p { color: var(--ink-dim); margin: 12px 0 0; letter-spacing: 0.1em; }
 
-.hall-tabs { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; margin-bottom: 22px; }
+.hall-tabs { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; margin-bottom: 14px; }
+/* los chips del Salón son enlaces */
+.hall-tabs .chip, .hall-period .chip { display: inline-block; text-decoration: none; }
+.hall-tabs .chip:focus-visible, .hall-period .chip:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+/* periodo: cyan para distinguirlo de la vista (magenta) */
+.hall-period { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; margin-bottom: 26px; }
+.hall-period .chip { padding: 9px 12px; }
+.hall-period .chip.active { color: var(--cyan); border-color: var(--cyan); box-shadow: 0 0 10px rgba(0,245,255,0.35); }
+
+/* buscador de jugador y paginador (vistas de detalle) */
+.hall-search { display: flex; gap: 10px; max-width: 520px; margin: 0 auto 22px; }
+.hall-search .btn { flex: none; }
+.hall-pager { display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap; margin-top: 20px; }
+.hall-pager .btn { text-decoration: none; }
+.hall-pager-info { font-size: 9px; letter-spacing: 0.14em; color: var(--ink-dim); }
+.btn.disabled { opacity: 0.35; cursor: not-allowed; pointer-events: none; }
+.hall-pager .btn:focus-visible, .hall-search .btn:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+@media (max-width: 720px) { .hall-search { flex-direction: column; } .hall-search .av-search { min-width: 0; } }
+
+/* rejilla de tablas por juego (vista TODOS) */
+.board-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 18px; }
+.board-card {
+  --accent: var(--cyan);
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  border-top: 2px solid var(--accent);
+  display: flex; flex-direction: column;
+}
+.board-card.c-magenta { --accent: var(--magenta); }
+.board-card.c-green { --accent: var(--green); }
+.board-card.c-yellow { --accent: var(--yellow); }
+.board-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 14px 16px 10px; }
+.board-head h2 {
+  margin: 0; font-family: var(--pixel); font-size: 12px; letter-spacing: 0.08em;
+  color: var(--accent); text-shadow: 0 0 8px currentColor;
+}
+.board-more { font-family: var(--pixel); font-size: 8px; letter-spacing: 0.14em; color: var(--ink-dim); text-decoration: none; white-space: nowrap; }
+.board-more:hover { color: var(--ink); }
+.board-more:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+.board-rows { list-style: none; margin: 0; padding: 0; }
+.board-rows li {
+  display: grid; grid-template-columns: 44px 1fr auto; gap: 10px; align-items: center;
+  padding: 9px 16px; border-top: 1px solid var(--line-2); font-family: var(--mono); font-size: 13px;
+}
+.board-rows .rk { font-family: var(--pixel); font-size: 10px; color: var(--ink-dim); }
+.board-rows .pl { color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.board-rows .sc { font-family: var(--pixel); font-size: 11px; color: var(--cyan); }
+.board-rows .top1 .rk, .board-rows .top1 .sc { color: var(--gold); }
+.board-rows .top2 .rk, .board-rows .top2 .sc { color: var(--silver); }
+.board-rows .top3 .rk, .board-rows .top3 .sc { color: var(--bronze); }
+.board-empty { margin: 0; padding: 26px 16px; border-top: 1px solid var(--line-2); text-align: center; font-family: var(--pixel); font-size: 9px; line-height: 1.7; letter-spacing: 0.08em; color: var(--ink-faint); }
+@media (max-width: 720px) { .board-grid { grid-template-columns: 1fr; } }
 .podium {
   display: grid;
   grid-template-columns: 1fr 1.2fr 1fr;
@@ -963,6 +1014,8 @@ a { color: inherit; text-decoration: none; }
 
 @media (max-width: 720px) {
   .hall-table .th, .hall-table .tr { grid-template-columns: 50px 1fr 90px 90px; font-size: 12px; padding: 10px 12px; }
+  /* cabecera más compacta: con 10px «RANGO» y «PUNTUACIÓN» se pisan con las columnas vecinas */
+  .hall-table .th { font-size: 7px; letter-spacing: 0.04em; gap: 6px; }
   .av-grid { padding: 0 16px; }
   .av-hero { padding: 36px 16px 16px; }
   .av-filters { padding: 0 16px; }
