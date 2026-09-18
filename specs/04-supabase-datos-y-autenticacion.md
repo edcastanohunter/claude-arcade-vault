@@ -101,6 +101,21 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
 4. **Autenticación real:** implementar `Auth.tsx` con email+contraseña y Google OAuth, `app/auth/callback/route.ts`, `app/auth/confirm/route.ts`; `app/layout.tsx` como Server Component pasando la sesión a `Nav`; sign-out con Server Action. Verificación manual con Playwright MCP (registro, confirmación, login, logout).
 5. **Puntuaciones:** Server Action `saveScore`; `HallOfFame` y el ranking de `GameDetail` leyendo de `v_global_leaderboard` / `v_game_leaderboard`; retirar `av_scores` de `GamePlayer`. Verificación manual con Playwright MCP y `npm run build` final.
 
+## Progreso de implementación
+
+**Última actualización:** 2026-09-18 · **Estado:** En curso (paso 2 de 5, bloqueado por el MCP de Supabase)
+
+- [x] **Paso 1 — Infraestructura:** dependencias instaladas; `lib/supabase/client.ts`, `server.ts`, `middleware.ts`; `proxy.ts` en la raíz (Next.js de este repo renombra `middleware.ts` → `proxy.ts`; verificar en `node_modules/next/dist/docs/`); variables en `.env.template`.
+- [ ] **Paso 2 — Esquema y seed:** _parcial_.
+  - [x] Migraciones escritas en `supabase/migrations/` (`20260918000001_schema`, `_handle_new_user`, `_views`, `_rls`, `_seed_games`, `_seed_scores`). Las vistas usan `security_invoker = true`; el seed (8 juegos, 18 perfiles demo, 80 puntuaciones) se generó desde `lib/data.ts`.
+  - [ ] **Pendiente:** aplicarlas en orden en Supabase (sin probar todavía); `list_tables` y `get_advisors` (security); reemplazar el placeholder `lib/supabase/database.types.ts` por los tipos generados.
+  - **Bloqueo:** el MCP de Supabase no está disponible. `.claude/settings.local.json` habilita `supabase`, pero no existe `.mcp.json`. Crear en la raíz `{"mcpServers":{"supabase":{"type":"http","url":"https://mcp.supabase.com/mcp?project_ref=<project-ref>"}}}`, reiniciar/`/mcp` y autenticar. Alternativa: pegar los SQL en el editor de Supabase y generar tipos con `npx supabase gen types typescript --project-id <id>`.
+- [ ] **Paso 3 — Catálogo desde la DB:** sin empezar (`Library`, `GameDetail`, `Home` y `HallOfFame` aún usan `GAMES`/`seededScores` de `lib/data.ts`).
+- [ ] **Paso 4 — Autenticación real:** sin empezar (`Auth.tsx` sigue con `av_user` en `localStorage`; no existe `app/auth/`).
+- [ ] **Paso 5 — Puntuaciones:** sin empezar (`saveScore` no existe; `GamePlayer` sigue con `av_scores`).
+
+**Para retomar:** conectar el MCP, aplicar las migraciones, regenerar tipos y continuar con el paso 3. Los criterios de aceptación siguen todos sin cumplirse.
+
 ## Criterios de aceptación
 
 - [ ] Las tablas `games`, `profiles` y `scores` existen con RLS activa; `get_advisors` (tipo `security`) no reporta errores sobre ellas.
