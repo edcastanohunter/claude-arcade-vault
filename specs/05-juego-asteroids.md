@@ -1,6 +1,6 @@
 # 05 — Juego Asteroids jugable en la plataforma
 
-**Estado:** Aprobado
+**Estado:** Implementado
 **Depende de:** SPEC 01, SPEC 04
 **Fecha:** 2026-09-18
 
