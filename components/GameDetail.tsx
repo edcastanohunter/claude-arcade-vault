@@ -1,12 +1,7 @@
-"use client";
-
-import { useMemo } from "react";
 import Link from "next/link";
-import { seededScores, type Game } from "@/lib/data";
+import type { Game, ScoreRow } from "@/lib/data";
 
-export default function GameDetail({ game }: { game: Game }) {
-  const scores = useMemo(() => seededScores(game.id.length * 17 + 3, 10), [game.id]);
-
+export default function GameDetail({ game, scores }: { game: Game; scores: ScoreRow[] }) {
   return (
     <div className="av-detail fade-in">
       <div>
@@ -54,8 +49,11 @@ export default function GameDetail({ game }: { game: Game }) {
       <aside>
         <div className="leaderboard">
           <h3>MEJORES PUNTUACIONES</h3>
+          {scores.length === 0 && (
+            <div style={{ padding: 16, color: "var(--ink-faint)", fontSize: 12 }}>AÚN NO HAY PUNTUACIONES. ¡SÉ EL PRIMERO!</div>
+          )}
           {scores.map((r, i) => (
-            <div key={r.name} className={"lb-row" + (i === 0 ? " top1" : i === 1 ? " top2" : i === 2 ? " top3" : "")}>
+            <div key={r.profileId ?? r.name} className={"lb-row" + (i === 0 ? " top1" : i === 1 ? " top2" : i === 2 ? " top3" : "")}>
               <div className="rk">#{String(r.rank).padStart(2, "0")}</div>
               <div className="pl">
                 {r.name}

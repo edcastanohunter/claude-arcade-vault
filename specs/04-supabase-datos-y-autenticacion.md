@@ -1,6 +1,6 @@
 # 04 — Supabase: datos y autenticación
 
-**Estado:** Aprobado
+**Estado:** Implementado
 **Depende de:** SPEC 01, SPEC 02, SPEC 03
 **Fecha:** 2026-09-17
 

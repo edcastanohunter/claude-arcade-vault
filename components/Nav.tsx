@@ -1,29 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { signOut } from "@/app/auth/actions";
 
 interface AvUser {
   name: string;
 }
 
-function readUser(): AvUser | null {
-  try {
-    return JSON.parse(localStorage.getItem("av_user") || "null");
-  } catch {
-    return null;
-  }
-}
-
-export default function Nav() {
+export default function Nav({ user }: { user: AvUser | null }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const [user, setUser] = useState<AvUser | null>(null);
-
-  useEffect(() => {
-    setUser(readUser());
-  }, [pathname]);
 
   const isActive = (name: "home" | "biblioteca" | "salon" | "about" | "auth") => {
     if (name === "home") return pathname === "/";
@@ -34,11 +22,6 @@ export default function Nav() {
   };
 
   const close = () => setOpen(false);
-
-  const handleSignOut = () => {
-    localStorage.removeItem("av_user");
-    setUser(null);
-  };
 
   return (
     <>
@@ -69,9 +52,11 @@ export default function Nav() {
           <span>CRÉDITOS · 03</span>
         </div>
         {user ? (
-          <button className="btn ghost auth-btn" onClick={handleSignOut}>
-            {user.name} ▾
-          </button>
+          <form action={signOut}>
+            <button className="btn ghost auth-btn" type="submit" title="Cerrar sesión">
+              {user.name} · SALIR
+            </button>
+          </form>
         ) : (
           <Link href="/login" className="btn auth-btn">
             Iniciar Sesión

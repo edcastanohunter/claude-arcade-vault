@@ -117,6 +117,7 @@ export type Database = {
     Views: {
       v_game_leaderboard: {
         Row: {
+          achieved_at: string | null
           best_score: number | null
           display_name: string | null
           game_id: string | null

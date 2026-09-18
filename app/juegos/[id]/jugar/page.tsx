@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { getGame } from "@/lib/games";
+import { getCurrentUser } from "@/lib/auth";
 import GamePlayer from "@/components/GamePlayer";
 
 export default async function GamePlayerPage({ params }: PageProps<"/juegos/[id]/jugar">) {
@@ -7,5 +8,7 @@ export default async function GamePlayerPage({ params }: PageProps<"/juegos/[id]
   const game = await getGame(id);
   if (!game) notFound();
 
-  return <GamePlayer game={game} />;
+  const user = await getCurrentUser();
+
+  return <GamePlayer game={game} userName={user?.name ?? null} />;
 }

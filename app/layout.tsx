@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Press_Start_2P, JetBrains_Mono } from "next/font/google";
 import Link from "next/link";
 import Nav from "@/components/Nav";
+import { getCurrentUser } from "@/lib/auth";
 import "./globals.css";
 
 const pixelFont = Press_Start_2P({
@@ -20,7 +21,9 @@ export const metadata: Metadata = {
   description: "Play games online and compete for high scores.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const user = await getCurrentUser();
+
   return (
     <html
       lang="en"
@@ -30,7 +33,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <div className="av-bg" />
         <div className="av-noise" />
         <div id="root">
-          <Nav />
+          <Nav user={user && { name: user.name }} />
           <main className="av-main">{children}</main>
           <footer
             style={{
