@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo } from "react";
 import Link from "next/link";
-import { GAMES, seededScores } from "@/lib/data";
+import type { Game, ScoreRow } from "@/lib/data";
 
 function useReveal() {
   useEffect(() => {
@@ -208,19 +208,29 @@ const FEATURES = [
 
 const TICKER_TIMES = ["hace 2 min", "hace 5 min", "hace 8 min", "hace 12 min", "hace 18 min", "hace 24 min", "hace 31 min"];
 
-export default function Home() {
+export interface RecentScore {
+  gameId: string;
+  score: number;
+  name: string;
+}
+
+export default function Home({
+  games,
+  recent,
+  topPlayers,
+}: {
+  games: Game[];
+  recent: RecentScore[];
+  topPlayers: ScoreRow[];
+}) {
   useReveal();
 
   const tickerRows = useMemo(() => {
-    const rows = seededScores(42, TICKER_TIMES.length);
-    return rows.map((r, i) => ({
-      ...r,
-      game: GAMES[i % GAMES.length],
-      t: TICKER_TIMES[i],
-    }));
-  }, []);
-
-  const topPlayers = useMemo(() => seededScores(7, 5), []);
+    return recent.flatMap((r, i) => {
+      const game = games.find((g) => g.id === r.gameId);
+      return game ? [{ ...r, game, t: TICKER_TIMES[i % TICKER_TIMES.length] }] : [];
+    });
+  }, [recent, games]);
 
   return (
     <div className="home fade-in">
@@ -259,7 +269,7 @@ export default function Home() {
       {/* WHY */}
       <section className="home-section reveal">
         <div className="section-head">
-          <div className="kicker pixel neon-magenta">// 01</div>
+          <div className="kicker pixel neon-magenta">{"// 01"}</div>
           <h2 className="section-title">¿POR QUÉ ARCADE VAULT?</h2>
           <div className="section-rule"></div>
         </div>
@@ -277,12 +287,12 @@ export default function Home() {
       {/* GAMES PREVIEW */}
       <section className="home-section reveal">
         <div className="section-head">
-          <div className="kicker pixel neon-cyan">// 02</div>
+          <div className="kicker pixel neon-cyan">{"// 02"}</div>
           <h2 className="section-title">JUEGOS DISPONIBLES AHORA</h2>
           <div className="section-rule"></div>
         </div>
         <div className="mini-rail">
-          {GAMES.slice(0, 6).map((g) => (
+          {games.slice(0, 6).map((g) => (
             <Link key={g.id} href={`/juegos/${g.id}`} className="mini-card">
               <div className="mini-cover">
                 <div className={"cover-bg " + g.cover}></div>
@@ -321,7 +331,7 @@ export default function Home() {
       {/* RECENT ACTIVITY / LEADERBOARD */}
       <section className="home-section reveal">
         <div className="section-head">
-          <div className="kicker pixel neon-yellow">// 03</div>
+          <div className="kicker pixel neon-yellow">{"// 03"}</div>
           <h2 className="section-title">ACTIVIDAD EN VIVO</h2>
           <div className="section-rule"></div>
         </div>
@@ -332,7 +342,7 @@ export default function Home() {
             </div>
             <div className="ticker">
               {tickerRows.map((r, i) => (
-                <div key={r.name + i} className="tick-row" style={{ animationDelay: i * 60 + "ms" }}>
+                <div key={r.name + r.gameId + i} className="tick-row" style={{ animationDelay: i * 60 + "ms" }}>
                   <span className={"tk-p neon-" + r.game.color}>{r.name}</span>
                   <span className="tk-mid">▸ {r.game.title}</span>
                   <span className="tk-s">+{r.score.toLocaleString("es-ES")}</span>
@@ -368,7 +378,7 @@ export default function Home() {
       {/* PRICING */}
       <section className="home-section reveal">
         <div className="section-head">
-          <div className="kicker pixel neon-green">// 04</div>
+          <div className="kicker pixel neon-green">{"// 04"}</div>
           <h2 className="section-title">PRECIOS</h2>
           <div className="section-rule"></div>
         </div>
