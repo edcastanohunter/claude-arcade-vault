@@ -1,6 +1,6 @@
 # 06 — Salón de la Fama: leaderboard por juego, periodo, búsqueda y paginación
 
-**Estado:** Aprobado
+**Estado:** Implementado
 **Depende de:** SPEC 01, SPEC 04
 **Fecha:** 2026-09-18
 
