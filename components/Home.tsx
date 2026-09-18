@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo } from "react";
 import Link from "next/link";
-import { GAMES, seededScores } from "@/lib/data";
+import { seededScores, type Game } from "@/lib/data";
 
 function useReveal() {
   useEffect(() => {
@@ -208,17 +208,17 @@ const FEATURES = [
 
 const TICKER_TIMES = ["hace 2 min", "hace 5 min", "hace 8 min", "hace 12 min", "hace 18 min", "hace 24 min", "hace 31 min"];
 
-export default function Home() {
+export default function Home({ games }: { games: Game[] }) {
   useReveal();
 
   const tickerRows = useMemo(() => {
     const rows = seededScores(42, TICKER_TIMES.length);
     return rows.map((r, i) => ({
       ...r,
-      game: GAMES[i % GAMES.length],
+      game: games[i % games.length],
       t: TICKER_TIMES[i],
     }));
-  }, []);
+  }, [games]);
 
   const topPlayers = useMemo(() => seededScores(7, 5), []);
 
@@ -282,7 +282,7 @@ export default function Home() {
           <div className="section-rule"></div>
         </div>
         <div className="mini-rail">
-          {GAMES.slice(0, 6).map((g) => (
+          {games.slice(0, 6).map((g) => (
             <Link key={g.id} href={`/juegos/${g.id}`} className="mini-card">
               <div className="mini-cover">
                 <div className={"cover-bg " + g.cover}></div>

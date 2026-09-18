@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { GAMES, seededScores } from "@/lib/data";
+import { seededScores, type Game } from "@/lib/data";
 
 interface AvUser {
   name: string;
@@ -16,8 +16,8 @@ function readUser(): AvUser | null {
   }
 }
 
-export default function HallOfFame() {
-  const [tab, setTab] = useState(GAMES[0].id);
+export default function HallOfFame({ games }: { games: Game[] }) {
+  const [tab, setTab] = useState(games[0].id);
   const [user, setUser] = useState<AvUser | null>(null);
 
   useEffect(() => {
@@ -25,7 +25,7 @@ export default function HallOfFame() {
   }, []);
 
   const rows = useMemo(() => seededScores(tab.length * 23 + 7, 12), [tab]);
-  const game = GAMES.find((g) => g.id === tab)!;
+  const game = games.find((g) => g.id === tab)!;
   const youRank = user ? Math.floor(8 + (tab.length % 4)) : null;
   const youScore = user ? rows[5]?.score - 2400 : null;
 
@@ -39,7 +39,7 @@ export default function HallOfFame() {
       </div>
 
       <div className="hall-tabs">
-        {GAMES.map((g) => (
+        {games.map((g) => (
           <button key={g.id} className={"chip" + (tab === g.id ? " active" : "")} onClick={() => setTab(g.id)}>
             {g.title}
           </button>

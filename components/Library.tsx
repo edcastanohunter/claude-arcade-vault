@@ -2,17 +2,17 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { CATS, GAMES, type Game } from "@/lib/data";
+import { CATS, type Game } from "@/lib/data";
 import GameCard from "@/components/GameCard";
 
-export default function Library() {
+export default function Library({ games }: { games: Game[] }) {
   const router = useRouter();
   const [q, setQ] = useState("");
   const [cat, setCat] = useState<(typeof CATS)[number]>("TODOS");
 
   const filtered = useMemo(() => {
-    return GAMES.filter((g) => (cat === "TODOS" || g.cat === cat) && g.title.toLowerCase().includes(q.toLowerCase()));
-  }, [q, cat]);
+    return games.filter((g) => (cat === "TODOS" || g.cat === cat) && g.title.toLowerCase().includes(q.toLowerCase()));
+  }, [games, q, cat]);
 
   const goToDetail = (game: Game) => router.push(`/juegos/${game.id}`);
 
